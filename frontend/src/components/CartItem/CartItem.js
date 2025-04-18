@@ -1,62 +1,48 @@
 import { BsPlusSquare, BsDashSquare } from 'react-icons/bs';
 import { AiFillCloseCircle } from 'react-icons/ai';
-
 import CartContext from '../../context/CartContext';
 
-const CartItem = (props) => (
+const CartItem = ({ cartItemDetails }) => (
+  
   <CartContext.Consumer>
-    {(value) => {
-      const {
-        removeCartItem,
-        decrementCartItemQuantity,
-        incrementCartItemQuantity,
-      } = value;
-      const { cartItemDetails } = props;
-      const { id, title, brand, quantity, price, imageUrl } = cartItemDetails;
-
-      const onRemoveCartItem = () => {
-        removeCartItem(id);
+    {({ removeCartItem, decrementCartItemQuantity, incrementCartItemQuantity }) => {
+      const { _id, name,type, quantity, price, img } = cartItemDetails;
+      
+      const handleRemove = () => {
+        removeCartItem(_id);
       };
 
-      const decrementQuantity = () => {
-        decrementCartItemQuantity(id, quantity);
+      const handleDecrement = () => {
+        decrementCartItemQuantity(_id, quantity);
       };
 
-      const incrementQuantity = () => {
-        incrementCartItemQuantity(id, quantity);
+      const handleIncrement = () => {
+        incrementCartItemQuantity(_id, quantity);
       };
 
       return (
         <li className="flex items-center bg-white p-4 mb-4 shadow-md rounded-lg md:p-6 md:mb-8">
-          <img
-            className="w-24 h-24 rounded-lg"
-            src={imageUrl}
-            alt={title}
-          />
+          <img className="w-24 h-24 rounded-lg" src={img} alt={name} />
           <div className="ml-4 flex-grow">
             <div className="mb-2">
-              <p className="text-gray-900 font-medium text-sm md:text-base">
-                {title}
-              </p>
-              <p className="text-gray-500 text-xs md:text-sm">by {brand}</p>
+              <p className="text-gray-900 font-medium text-sm md:text-base">{name}</p>
+              <p className="text-gray-500 text-xs md:text-sm"> {type}</p>
             </div>
             <div className="flex items-center mb-2">
               <button
                 data-testid="minus"
                 type="button"
                 className="p-1"
-                onClick={decrementQuantity}
+                onClick={handleDecrement}
               >
                 <BsDashSquare className="text-gray-600 w-4 h-4" />
               </button>
-              <p className="mx-2 text-gray-700 font-medium text-sm md:text-base">
-                {quantity}
-              </p>
+              <p className="mx-2 text-gray-700 font-medium text-sm md:text-base">{quantity}</p>
               <button
                 data-testid="plus"
                 type="button"
                 className="p-1"
-                onClick={incrementQuantity}
+                onClick={handleIncrement}
               >
                 <BsPlusSquare className="text-gray-600 w-4 h-4" />
               </button>
@@ -69,7 +55,7 @@ const CartItem = (props) => (
                 data-testid="remove"
                 className="text-gray-600 text-xs md:hidden"
                 type="button"
-                onClick={onRemoveCartItem}
+                onClick={handleRemove}
               >
                 Remove
               </button>
@@ -78,7 +64,7 @@ const CartItem = (props) => (
           <button
             className="ml-8 hidden md:block"
             type="button"
-            onClick={onRemoveCartItem}
+            onClick={handleRemove}
           >
             <AiFillCloseCircle className="text-gray-600 w-5 h-5" />
           </button>

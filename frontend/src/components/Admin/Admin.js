@@ -59,8 +59,9 @@ const Admin = () => {
       await axios.post(`${backendUrl}/api/admin/add-products`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      fetchProducts();
+     
       toast.success('Product added successfully.');
+      fetchProducts();
       setNewProduct({ name: '', price: '', type: '', img: null });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to add product.');

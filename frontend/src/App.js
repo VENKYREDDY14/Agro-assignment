@@ -11,17 +11,20 @@ import Status from './components/Status/Status';
 import Layout from './components/Layout/Layout'; // Import the new Layout component
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
+import './App.css';
 
 const App = () => {
   const [cartList, setCartList] = useState([]);
 
   // Add a product to the cart
   const addCartItem = (product) => {
-    const productInCart = cartList.find((item) => item.id === product.id);
-    if (productInCart) {
+   
+    const existingItem = cartList.find((item) => item._id === product._id);
+
+    if (existingItem) {
       setCartList((prevCartList) =>
         prevCartList.map((item) =>
-          item.id === product.id
+          item._id === product._id
             ? { ...item, quantity: item.quantity + product.quantity }
             : item
         )
@@ -35,7 +38,7 @@ const App = () => {
   const incrementCartItemQuantity = (id) => {
     setCartList((prevCartList) =>
       prevCartList.map((item) =>
-        item.id === id ? { ...item, quantity: item.quantity + 1 } : item
+        item._id === id ? { ...item, quantity: item.quantity + 1 } : item
       )
     );
   };
@@ -45,7 +48,7 @@ const App = () => {
     setCartList((prevCartList) =>
       prevCartList
         .map((item) =>
-          item.id === id ? { ...item, quantity: item.quantity - 1 } : item
+          item._id === id ? { ...item, quantity: item.quantity - 1 } : item
         )
         .filter((item) => item.quantity > 0)
     );
@@ -54,7 +57,7 @@ const App = () => {
   // Remove a product from the cart
   const removeCartItem = (id) => {
     setCartList((prevCartList) =>
-      prevCartList.filter((item) => item.id !== id)
+      prevCartList.filter((item) => item._id !== id)
     );
   };
 

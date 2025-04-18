@@ -3,17 +3,13 @@ import CartContext from '../../context/CartContext';
 
 const CartListView = () => (
   <CartContext.Consumer>
-    {(value) => {
-      const { cartList } = value;
-
-      return (
-        <ul className="list-none p-0">
-          {cartList.map((eachCartItem) => (
-            <CartItem key={eachCartItem.id} cartItemDetails={eachCartItem} />
-          ))}
-        </ul>
-      );
-    }}
+    {({ cartList }) => (
+      <ul className="list-none p-0">
+        {cartList.map((item) => (
+          <CartItem key={item._id} cartItemDetails={item} />
+        ))}
+      </ul>
+    )}
   </CartContext.Consumer>
 );
 

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import CartContext from '../../context/CartContext';
-import axios from 'axios';
-import { toast } from 'react-toastify';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const CartSummary = () => {
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -12,50 +11,41 @@ const CartSummary = () => {
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-  const handlePlaceOrder = async (data, cartList, totalCost) => {
+  const handlePlaceOrder = async (data, cartList) => {
     try {
-      const token = localStorage.getItem('jwtToken'); // Check for the token
+      const token = localStorage.getItem('jwtToken');
       if (!token) {
-        toast.error('You must be logged in to place an order');
-        navigate('/login'); // Redirect to login page
+        navigate('/login');
         return;
       }
 
       const orderData = {
         ...data,
         items: cartList,
-        totalCost, // Include total cost in the order
         status: 'Pending',
       };
 
-      const response = await axios.post(`${backendUrl}/api/user/place-order`, orderData, {
+      await axios.post(`${backendUrl}/api/user/place-order`, orderData, {
         headers: {
-          Authorization: `Bearer ${token}`, // Include the Authorization header
-          'Content-Type': 'application/json', // Ensure the content type is JSON
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
         },
       });
 
-      if (response.status === 201) {
-        toast.success('Order placed successfully!');
-        setShowOrderForm(false);
-        reset(); // Reset the form after successful submission
-      } else {
-        toast.error('Unexpected response from the server');
-      }
+      setShowOrderForm(false);
+      reset();
     } catch (error) {
-      console.error('Error placing order:', error.response || error.message);
-      toast.error(error.response?.data?.message || 'Failed to place order. Please try again.');
+      console.error('Error placing order:', error.message);
     }
   };
 
   return (
     <CartContext.Consumer>
-      {(value) => {
-        const { cartList } = value;
-        const cartListLength = cartList.length;
-        const totalCost = cartList.reduce((acc, eachItem) => {
-          return acc + eachItem.price * eachItem.quantity;
-        }, 0);
+      {({ cartList }) => {
+        const totalCost = cartList.reduce(
+          (acc, item) => acc + item.price * item.quantity,
+          0
+        );
 
         return (
           <div className="flex flex-col justify-center items-end bg-gray-100 p-6 rounded-lg shadow-md">
@@ -63,7 +53,7 @@ const CartSummary = () => {
               <h1 className="text-lg font-medium text-gray-700 mb-2">
                 Order Total: <span className="text-black font-bold">Rs {totalCost}/-</span>
               </h1>
-              <p className="text-sm text-gray-600 mb-4">{cartListLength} items in cart</p>
+              <p className="text-sm text-gray-600 mb-4">{cartList.length} items in cart</p>
               {!showOrderForm ? (
                 <button
                   onClick={() => setShowOrderForm(true)}
@@ -73,7 +63,7 @@ const CartSummary = () => {
                 </button>
               ) : (
                 <form
-                  onSubmit={handleSubmit((data) => handlePlaceOrder(data, cartList, totalCost))}
+                  onSubmit={handleSubmit((data) => handlePlaceOrder(data, cartList))}
                   className="flex flex-col gap-4"
                 >
                   <input
@@ -121,7 +111,7 @@ const CartSummary = () => {
                     type="button"
                     onClick={() => {
                       setShowOrderForm(false);
-                      reset(); // Reset the form when canceled
+                      reset();
                     }}
                     className="bg-red-600 text-white px-6 py-2 rounded-lg shadow-md hover:bg-red-700 transition-colors"
                   >
