@@ -110,14 +110,18 @@ const Admin = () => {
     }
 
     try {
-      const response = await axios.put(`${backendUrl}/api/admin/update-product/${productId}`, {
+      // Send the updated price to the backend
+      await axios.put(`${backendUrl}/api/admin/update-product/${productId}`, {
         price: updatedPrice,
       });
+
+      // Update the product price in the frontend state directly
       setProducts((prevProducts) =>
         prevProducts.map((product) =>
-          product._id === productId ? { ...product, price: response.data.price } : product
+          product._id === productId ? { ...product, price: updatedPrice } : product
         )
       );
+
       setEditingProduct(null);
       setEditedPrice('');
       toast.success('Product price updated successfully.');

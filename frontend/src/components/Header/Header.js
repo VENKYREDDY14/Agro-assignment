@@ -10,8 +10,7 @@ const navItems = [
 
 const Header = () => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('jwtToken')); // Check login status
-
+    const [isLoggedIn, setIsLoggedIn] = useState(!!localStorage.getItem('jwtToken'));
     const navigate = useNavigate();
 
     const toggleMenu = () => {
@@ -19,24 +18,21 @@ const Header = () => {
     };
 
     const handleLogout = () => {
-        localStorage.removeItem('jwtToken'); // Remove token from localStorage
-        setIsLoggedIn(false); // Update state to trigger re-render
-        navigate('/'); // Redirect to login page
+        localStorage.removeItem('jwtToken');
+        setIsLoggedIn(false);
+        navigate('/');
     };
 
     useEffect(() => {
-        // Update login status if the token changes
         setIsLoggedIn(!!localStorage.getItem('jwtToken'));
     }, []);
 
     return (
         <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-blue-600 text-white shadow-md">
-            {/* Logo Section */}
             <div className="text-2xl font-bold cursor-pointer" onClick={() => navigate('/')}>
                 <span className="text-yellow-400">Fruit</span>Mart
             </div>
 
-            {/* Hamburger Menu for Mobile */}
             <button
                 className="block md:hidden text-white focus:outline-none"
                 onClick={toggleMenu}
@@ -57,7 +53,6 @@ const Header = () => {
                 </svg>
             </button>
 
-            {/* Navigation Menu */}
             <nav
                 className={`${
                     isMenuOpen ? "block" : "hidden"
@@ -66,34 +61,35 @@ const Header = () => {
                 <ul className="flex flex-col md:flex-row md:gap-6 md:items-center md:justify-end">
                     {navItems.map((item) => (
                         <li
-                            onClick={() => navigate(item.path)}
+                            onClick={() => {
+                                setIsMenuOpen(false);
+                                navigate(item.path);
+                            }}
                             key={item.id}
                             className="py-2 px-4 md:py-0 md:px-0 hover:text-yellow-400 cursor-pointer transition-colors"
                         >
                             {item.displayText}
                         </li>
                     ))}
+                    <li className="py-2 px-4 md:py-0 md:px-0">
+                        {isLoggedIn ? (
+                            <button
+                                onClick={handleLogout}
+                                className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition w-full md:w-auto"
+                            >
+                                Logout
+                            </button>
+                        ) : (
+                            <Link
+                                to="/login"
+                                className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition w-full md:w-auto"
+                            >
+                                Login
+                            </Link>
+                        )}
+                    </li>
                 </ul>
             </nav>
-
-            {/* Login/Logout Button */}
-            <div className="hidden md:block ml-4">
-                {isLoggedIn ? (
-                    <button
-                        onClick={handleLogout}
-                        className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
-                    >
-                        Logout
-                    </button>
-                ) : (
-                    <Link
-                        to="/login"
-                        className="bg-white text-blue-600 px-4 py-2 rounded-lg shadow hover:bg-gray-100 transition"
-                    >
-                        Login
-                    </Link>
-                )}
-            </div>
         </header>
     );
 };
