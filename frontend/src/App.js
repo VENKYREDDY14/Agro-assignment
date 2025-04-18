@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import Products from './components/Products/Products';
-import Header from './components/Header/Header';
 import Home from './components/Home/Home';
 import Cart from './components/Cart/Cart';
 import Login from './components/Login/Login';
 import CartContext from './context/CartContext';
 import Register from './components/Register/Register';
 import Admin from './components/Admin/Admin';
+import Status from './components/Status/Status';
+import Layout from './components/Layout/Layout'; // Import the new Layout component
 import { ToastContainer } from "react-toastify";
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -74,13 +75,16 @@ const App = () => {
       }}
     >
       <div>
-        <ToastContainer/>
+        <ToastContainer />
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/" element={<Home />} />
-          <Route path="/products" element={<Products />} />
-          <Route path="/cart" element={<Cart />} />
+          <Route element={<Layout />}> {/* Wrap these routes with Layout */}
+            <Route path="/" element={<Home />} />
+            <Route path="/products" element={<Products />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/status" element={<Status />} />
+          </Route>
           <Route path="/admin" element={<Admin />} />
           <Route path="*" element={<h1>404 Not Found</h1>} />
         </Routes>

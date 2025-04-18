@@ -30,7 +30,8 @@ const CartSummary = () => {
 
       const response = await axios.post(`${backendUrl}/api/user/place-order`, orderData, {
         headers: {
-          Authorization: `Bearer ${token}`, // Pass the token in the Authorization header
+          Authorization: `Bearer ${token}`, // Include the Authorization header
+          'Content-Type': 'application/json', // Ensure the content type is JSON
         },
       });
 

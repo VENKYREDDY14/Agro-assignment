@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken';
 import nodemailer from 'nodemailer';
 import validator from 'validator';
 import Order from '../models/orderModel.js';
+import Product from '../models/productModel.js';
 
 // Generate OTP
 const generateOtp = () => Math.floor(100000 + Math.random() * 900000).toString();
@@ -190,13 +191,20 @@ export const placeOrder = async (req, res) => {
       return res.status(400).json({ message: 'All fields (buyer_name, buyer_contact, delivery_address, items) are required' });
     }
 
+    // Log the items for debugging
+    console.log('Items being saved:', items);
+
+    // Extract user ID from the request object (set by authUser middleware)
+    const userId = req.userId;
+
     // Create a new order
     const newOrder = new Order({
       buyer_name,
       buyer_contact,
       delivery_address,
-      items,
+      items, // Ensure items is an array of objects
       status: status || 'Pending', // Default status is 'Pending'
+      userId, // Store the user ID
     });
 
     // Save the order to the database
@@ -206,5 +214,38 @@ export const placeOrder = async (req, res) => {
   } catch (error) {
     console.error('Error placing order:', error.message);
     res.status(500).json({ message: 'Server error while placing order' });
+  }
+};
+
+export const getAllProducts = async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (error) {
+    console.error('Error fetching products:', error.message);
+    res.status(500).json({ message: 'Server error while fetching products' });
+  }
+};
+
+export const getUserOrders = async (req, res) => {
+  try {
+    const userId = req.userId; // Extracted from the authUser middleware
+    console.log('Fetching orders for user:', userId);
+
+    const orders = await Order.find({ userId }); // Fetch orders for the authenticated user
+
+    if (!orders || orders.length === 0) {
+      return res.status(404).json({ message: 'No orders found for the authenticated user.' });
+    }
+   
+    res.status(200).json(orders);
+  } catch (error) {
+    console.error('Error fetching user orders:', error.message);
+
+    if (error.name === 'CastError') {
+      return res.status(400).json({ message: 'Invalid user ID format.' });
+    }
+
+    res.status(500).json({ message: 'An unexpected error occurred while fetching orders. Please try again later.' });
   }
 };

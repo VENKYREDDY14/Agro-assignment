@@ -5,45 +5,62 @@ import { toast } from 'react-toastify';
 const Admin = () => {
   const [orders, setOrders] = useState([]);
   const [products, setProducts] = useState([]);
-  const [newProduct, setNewProduct] = useState({ name: '', price: '', type: '' });
+  const [newProduct, setNewProduct] = useState({ name: '', price: '', type: '', img: null });
   const [bulkFile, setBulkFile] = useState(null);
   const [editingProduct, setEditingProduct] = useState(null); // State for editing product
   const [editedPrice, setEditedPrice] = useState(''); // State for the edited price
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-  const fetchData = async () => {
+  const fetchOrders = async () => {
     try {
-      const [ordersResponse, productsResponse] = await Promise.all([
-        axios.get(`${backendUrl}/api/admin/orders`),
-        axios.get(`${backendUrl}/api/admin/products`),
-      ]);
+      const ordersResponse = await axios.get(`${backendUrl}/api/admin/orders`);
       setOrders(ordersResponse.data);
-      setProducts(productsResponse.data);
+      setLoading(false);
     } catch (error) {
-      toast.error('Failed to fetch data');
+      toast.error('Failed to fetch orders');
+      setError('Failed to fetch orders. Please try again later.');
+      setLoading(false);
     }
   };
-  // Fetch orders and products
+
+  const fetchData = async () => {
+    try {
+      const productsResponse = await axios.get(`${backendUrl}/api/admin/products`);
+      setProducts(productsResponse.data);
+    } catch (error) {
+      toast.error('Failed to fetch products');
+    }
+  };
+
   useEffect(() => {
+    fetchOrders();
     fetchData();
   }, [backendUrl]);
 
-  // Add a new product
   const handleAddProduct = async (event) => {
     event.preventDefault();
+
+    const formData = new FormData();
+    formData.append('name', newProduct.name);
+    formData.append('price', newProduct.price);
+    formData.append('type', newProduct.type);
+    formData.append('img', newProduct.img);
+
     try {
-      const response = await axios.post(`${backendUrl}/api/admin/products`, newProduct);
-      setProducts((prevProducts) => [...prevProducts, response.data]);
-      setNewProduct({ name: '', price: '', type: '' });
+      await axios.post(`${backendUrl}/api/admin/add-products`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      fetchData();
       toast.success('Product added successfully');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to add product');
+      toast.error('Failed to add product');
     }
   };
 
-  // Delete a product
   const handleDeleteProduct = async (productId) => {
     try {
       await axios.delete(`${backendUrl}/api/admin/products/${productId}`);
@@ -54,37 +71,23 @@ const Admin = () => {
     }
   };
 
-  // Handle bulk upload
   const handleBulkUpload = async (event) => {
     event.preventDefault();
-    if (!bulkFile) {
-      toast.error('Please upload a file');
-      return;
-    }
 
     const formData = new FormData();
     formData.append('file', bulkFile);
 
     try {
-      const response = await axios.post(`${backendUrl}/api/admin/products/bulk-upload`, formData, {
+      await axios.post(`${backendUrl}/api/admin/products/bulk-upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-
-      if (Array.isArray(response.data)) {
-        setProducts((prevProducts) => [...prevProducts, ...response.data]);
-        toast.success('Bulk products uploaded successfully');
-      } else {
-        toast.error('Unexpected response format from server');
-      }
-
-      setBulkFile(null);
-      fileInputRef.current.value = '';
+      fetchData();
+      toast.success('Bulk products uploaded successfully');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to upload bulk products');
+      toast.error('Failed to upload bulk products');
     }
   };
 
-  // Update product price
   const handleUpdatePrice = async (productId, updatedPrice) => {
     try {
       const response = await axios.put(`${backendUrl}/api/admin/update-product/${productId}`, {
@@ -95,14 +98,27 @@ const Admin = () => {
           product._id === productId ? { ...product, price: response.data.price } : product
         )
       );
-      setEditingProduct(null); // Exit editing mode
-      setEditedPrice(''); // Clear the edited price
+      setEditingProduct(null);
+      setEditedPrice('');
       toast.success('Product price updated successfully');
-      fetchData()
+      fetchData();
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to update product price');
     }
   };
+
+  if (loading) {
+    return <div className="p-4 pt-20 text-center">Loading...</div>;
+  }
+
+  if (error) {
+    return (
+      <div className="p-4 pt-20 text-center text-red-500">
+        <h1 className="text-xl font-bold">Error</h1>
+        <p>{error}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4">
@@ -116,10 +132,12 @@ const Admin = () => {
             <thead>
               <tr>
                 <th className="border border-gray-300 px-4 py-2">Order ID</th>
+                <th className="border border-gray-300 px-4 py-2">User ID</th>
                 <th className="border border-gray-300 px-4 py-2">Buyer Name</th>
                 <th className="border border-gray-300 px-4 py-2">Contact</th>
                 <th className="border border-gray-300 px-4 py-2">Address</th>
                 <th className="border border-gray-300 px-4 py-2">Total Items</th>
+                <th className="border border-gray-300 px-4 py-2">Ordered Items</th>
                 <th className="border border-gray-300 px-4 py-2">Status</th>
               </tr>
             </thead>
@@ -127,10 +145,20 @@ const Admin = () => {
               {orders.map((order) => (
                 <tr key={order._id}>
                   <td className="border border-gray-300 px-4 py-2">{order._id}</td>
+                  <td className="border border-gray-300 px-4 py-2">{order.userId}</td>
                   <td className="border border-gray-300 px-4 py-2">{order.buyer_name}</td>
                   <td className="border border-gray-300 px-4 py-2">{order.buyer_contact}</td>
                   <td className="border border-gray-300 px-4 py-2">{order.delivery_address}</td>
                   <td className="border border-gray-300 px-4 py-2">{order.items.length}</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <ul>
+                      {order.items.map((item, index) => (
+                        <li key={index}>
+                          {item.name} - {item.quantity}
+                        </li>
+                      ))}
+                    </ul>
+                  </td>
                   <td className="border border-gray-300 px-4 py-2">{order.status}</td>
                 </tr>
               ))}
@@ -173,6 +201,13 @@ const Admin = () => {
             <option value="fruit">Fruit</option>
             <option value="vegetable">Vegetable</option>
           </select>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => setNewProduct({ ...newProduct, img: e.target.files[0] })}
+            required
+            className="border border-gray-300 px-2 py-1"
+          />
           <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">
             Add Product
           </button>
@@ -232,7 +267,7 @@ const Admin = () => {
                     <button
                       onClick={() => {
                         setEditingProduct(product._id);
-                        setEditedPrice(product.price); // Set the current price for editing
+                        setEditedPrice(product.price);
                       }}
                       className="bg-yellow-500 text-white px-2 py-1 rounded mr-2"
                     >

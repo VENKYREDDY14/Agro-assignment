@@ -25,9 +25,14 @@ const orderSchema = new mongoose.Schema({
     enum: ['Pending', 'In Progress', 'Delivered'], // Allowed statuses
     default: 'Pending', // Default status
   },
+  userId: {
+    type: mongoose.Schema.Types.ObjectId, // Reference to the user model
+    ref: 'user', // Name of the user model
+    required: true,
+  },
 }, { timestamps: true }); // Automatically adds createdAt and updatedAt fields
 
-const orderModel=mongoose.model.order || mongoose.model('order',orderSchema);
+const orderModel = mongoose.models.order || mongoose.model('order', orderSchema);
 
 export default orderModel;
 

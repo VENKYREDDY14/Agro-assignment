@@ -3,15 +3,16 @@ import csv from 'csv-parser';
 import fs from 'fs';
 import Order from '../models/orderModel.js'; // Ensure you have an Order model
 
-// Bulk upload products
+// Bulk upload products with image upload
 export const bulkUploadProducts = async (req, res) => {
   try {
     if (!req.file) {
-      return res.status(400).json({ message: 'No file uploaded' });
+      return res.status(400).json({ message: 'No CSV file uploaded' });
     }
 
     const products = [];
 
+    // Read and parse the CSV file
     fs.createReadStream(req.file.path)
       .pipe(csv())
       .on('data', (row) => {
@@ -20,22 +21,19 @@ export const bulkUploadProducts = async (req, res) => {
             name: row.name,
             price: parseFloat(row.price),
             type: row.type,
+            img: row.img || undefined, // Use the provided image or let the model apply the default
           });
         }
       })
       .on('end', async () => {
         try {
           const savedProducts = await Product.insertMany(products);
-          res.status(201).json(savedProducts);
+          res.status(201).json({ message: 'Products uploaded successfully', products: savedProducts });
         } catch (error) {
-          if (error.code === 11000) {
-            res.status(400).json({ message: 'Duplicate product names found in the file' });
-          } else {
-            console.error('Error saving products:', error.message);
-            res.status(500).json({ message: 'Failed to save products to the database' });
-          }
+          console.error('Error saving products:', error.message);
+          res.status(500).json({ message: 'Failed to save products to the database' });
         } finally {
-          fs.unlinkSync(req.file.path);
+          fs.unlinkSync(req.file.path); // Delete the CSV file after processing
         }
       });
   } catch (error) {
@@ -44,19 +42,20 @@ export const bulkUploadProducts = async (req, res) => {
   }
 };
 
-// Add a single product
+// Add a single product with image upload
 export const addProduct = async (req, res) => {
   const { name, price, type } = req.body;
 
   try {
-    if (!name || !price || !type) {
-      return res.status(400).json({ message: 'All fields (name, price, type) are required' });
+    if (!name || !price || !type || !req.file) {
+      return res.status(400).json({ message: 'All fields (name, price, type, image) are required' });
     }
 
     const newProduct = new Product({
       name,
       price: parseFloat(price),
       type,
+      img: req.file.path, // Store the uploaded image path in the database
     });
 
     const savedProduct = await newProduct.save();

@@ -17,7 +17,7 @@ const Cart = () => (
 
       return (
         <>
-        <Header/>
+  
         <div className="flex justify-center min-h-[75vh] md:min-h-[90vh] pt-20">
           {showEmptyView ? (
             <EmptyCartView />

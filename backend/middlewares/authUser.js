@@ -13,6 +13,7 @@ const authUser = (req, res, next) => {
     // Verify the token
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = decoded; // Attach the decoded user data to the request object
+    req.userId = decoded.id; // Attach the user ID to the request object
 
     next(); // Proceed to the next middleware or route handler
   } catch (error) {

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate, Navigate } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -10,7 +9,9 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [errorStatus, setErrorStatus] = useState(false);
 
-  const backendUrl=process.env.REACT_APP_BACKEND_URL;
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+  const adminGmail = process.env.REACT_APP_ADMIN_GMAIL;
+  const adminPassword = process.env.REACT_APP_ADMIN_PASSWORD;
 
   const {
     register,
@@ -18,33 +19,34 @@ const Login = () => {
     formState: { errors },
   } = useForm();
 
-
   const handlingLogin = async (data) => {
     const { gmail, password } = data;
-    console.log(process.env.REACT_APP_ADMIN_GMAIL)
-    console.log(gmail===process.env.REACT_APP_ADMIN_GMAIL && password===process.env.REACT_APP_ADMIN_PASSWORD);
-    if (
-      gmail === process.env.REACT_APP_ADMIN_GMAIL &&
-      password === process.env.REACT_APP_ADMIN_PASSWORD
-    ) {
+
+    // Admin login logic
+    if (gmail === adminGmail && password === adminPassword) {
       toast.success('Admin login successful');
-      return navigate('/admin');
+      return navigate('/admin'); // Redirect to Admin page
     }
-  
+
+    // Normal user login logic
     const userDetails = { gmail, password };
 
     try {
       const response = await axios.post(`${backendUrl}/api/user/login`, userDetails);
 
       if (response.status === 200) {
-        const token = response.data;
-        const jwtToken = token.jwtToken;
-        localStorage.setItem('jwtToken',jwtToken);
+        const token = response.data.jwtToken;
 
-       navigate('/');
-        toast.success('Login Successful');
+        if (token) {
+          localStorage.setItem('jwtToken', token); // Store the token in localStorage
+          toast.success('Login Successful');
+          navigate('/'); // Redirect to home page
+        } else {
+          toast.error('Token not received. Please try again.');
+        }
       }
     } catch (error) {
+      console.error('Login Error:', error.message); // Debugging log
       setErrorStatus(true);
       toast.error('Invalid credentials or something went wrong. Please try again.');
     }
