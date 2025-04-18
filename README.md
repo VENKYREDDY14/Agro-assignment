@@ -87,11 +87,11 @@ The primary goal of this project is to create a web application that streamlines
    CLOUDINARY_SECRET_KEY='skiUay9_yGFQUhRYOXZQE8kNbXM'
    ```
 
-   Create a `.env` file in the backend directory with the following content:
+   Create a `.env` file in the frontend directory with the following content:
    ```env
    REACT_APP_BACKEND_URL='http://localhost:4000'
-REACT_APP_ADMIN_GMAIL='admin@gmail.com'
-REACT_APP_ADMIN_PASSWORD='admin@password'
+   REACT_APP_ADMIN_GMAIL='admin@gmail.com'
+   REACT_APP_ADMIN_PASSWORD='admin@password'
    ```
 
 4. **Start the Backend Server**:
