@@ -24,9 +24,9 @@ const productSchema = new mongoose.Schema({
     default: function () {
       const type = this.type.toLowerCase();
       if (type === 'fruit') {
-        return 'https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?auto=format&fit=crop&w=600&q=80';
+        return 'https://res.cloudinary.com/your-cloud-name/image/upload/w_400,h_300,c_fill/fruits/apple.jpg';
       } else if (type === 'vegetable') {
-        return 'https://images.unsplash.com/photo-1518977956815-dee0061a4293?auto=format&fit=crop&w=600&q=80';
+        return 'https://res.cloudinary.com/dsad92ak9/image/upload/zufzlfeozy7tzcdpwj8i';
       } else {
         return 'https://via.placeholder.com/150?text=Product+Image';
       }

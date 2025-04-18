@@ -1,7 +1,7 @@
 import express from 'express';
 import multer from 'multer';
 import { uploadSingleImage, uploadCSV } from '../middlewares/multer.js';
-import { bulkUploadProducts,deleteProduct,addProduct,getAllProducts,getAllOrders,updateProduct} from '../controllers/adminController.js';
+import { bulkUploadProducts,deleteProduct,addProduct,getAllProducts,getAllOrders,updateProduct,updateOrderStatus} from '../controllers/adminController.js';
 
 const adminRouter=express.Router();
 
@@ -13,5 +13,6 @@ adminRouter.post('/add-products',uploadSingleImage.single('img'), addProduct);
 adminRouter.get('/products', getAllProducts);
 adminRouter.get('/orders', getAllOrders);
 adminRouter.put('/update-product/:id', updateProduct);
+adminRouter.put('/update-order/:id', updateOrderStatus);
 
 export default adminRouter

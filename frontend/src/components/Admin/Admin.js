@@ -7,8 +7,8 @@ const Admin = () => {
   const [products, setProducts] = useState([]);
   const [newProduct, setNewProduct] = useState({ name: '', price: '', type: '', img: null });
   const [bulkFile, setBulkFile] = useState(null);
-  const [editingProduct, setEditingProduct] = useState(null); // State for editing product
-  const [editedPrice, setEditedPrice] = useState(''); // State for the edited price
+  const [editingProduct, setEditingProduct] = useState(null);
+  const [editedPrice, setEditedPrice] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const fileInputRef = useRef(null);
@@ -19,30 +19,35 @@ const Admin = () => {
     try {
       const ordersResponse = await axios.get(`${backendUrl}/api/admin/orders`);
       setOrders(ordersResponse.data);
-      setLoading(false);
     } catch (error) {
-      toast.error('Failed to fetch orders');
-      setError('Failed to fetch orders. Please try again later.');
+      toast.error('Unable to fetch orders. Please try again later.');
+      setError('Unable to fetch orders.');
+    } finally {
       setLoading(false);
     }
   };
 
-  const fetchData = async () => {
+  const fetchProducts = async () => {
     try {
       const productsResponse = await axios.get(`${backendUrl}/api/admin/products`);
       setProducts(productsResponse.data);
     } catch (error) {
-      toast.error('Failed to fetch products');
+      toast.error('Unable to fetch products. Please try again later.');
     }
   };
 
   useEffect(() => {
     fetchOrders();
-    fetchData();
+    fetchProducts();
   }, [backendUrl]);
 
   const handleAddProduct = async (event) => {
     event.preventDefault();
+
+    if (!newProduct.name || !newProduct.price || !newProduct.type || !newProduct.img) {
+      toast.error('All fields are required to add a product.');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('name', newProduct.name);
@@ -54,10 +59,11 @@ const Admin = () => {
       await axios.post(`${backendUrl}/api/admin/add-products`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      fetchData();
-      toast.success('Product added successfully');
+      fetchProducts();
+      toast.success('Product added successfully.');
+      setNewProduct({ name: '', price: '', type: '', img: null });
     } catch (error) {
-      toast.error('Failed to add product');
+      toast.error(error.response?.data?.message || 'Failed to add product.');
     }
   };
 
@@ -65,14 +71,19 @@ const Admin = () => {
     try {
       await axios.delete(`${backendUrl}/api/admin/products/${productId}`);
       setProducts((prevProducts) => prevProducts.filter((product) => product._id !== productId));
-      toast.success('Product deleted successfully');
+      toast.success('Product deleted successfully.');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to delete product');
+      toast.error(error.response?.data?.message || 'Failed to delete product.');
     }
   };
 
   const handleBulkUpload = async (event) => {
     event.preventDefault();
+
+    if (!bulkFile) {
+      toast.error('Please upload a CSV file.');
+      return;
+    }
 
     const formData = new FormData();
     formData.append('file', bulkFile);
@@ -81,14 +92,21 @@ const Admin = () => {
       await axios.post(`${backendUrl}/api/admin/products/bulk-upload`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-      fetchData();
-      toast.success('Bulk products uploaded successfully');
+      fetchProducts();
+      toast.success('Bulk products uploaded successfully.');
+      setBulkFile(null);
+      fileInputRef.current.value = '';
     } catch (error) {
-      toast.error('Failed to upload bulk products');
+      toast.error(error.response?.data?.message || 'Failed to upload bulk products.');
     }
   };
 
   const handleUpdatePrice = async (productId, updatedPrice) => {
+    if (!updatedPrice) {
+      toast.error('Price cannot be empty.');
+      return;
+    }
+
     try {
       const response = await axios.put(`${backendUrl}/api/admin/update-product/${productId}`, {
         price: updatedPrice,
@@ -100,10 +118,33 @@ const Admin = () => {
       );
       setEditingProduct(null);
       setEditedPrice('');
-      toast.success('Product price updated successfully');
-      fetchData();
+      toast.success('Product price updated successfully.');
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to update product price');
+      toast.error(error.response?.data?.message || 'Failed to update product price.');
+    }
+  };
+
+  const handleUpdateOrderStatus = async (orderId, newStatus) => {
+    try {
+      await axios.put(`${backendUrl}/api/admin/update-order/${orderId}`, { status: newStatus });
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order._id === orderId ? { ...order, status: newStatus } : order
+        )
+      );
+      toast.success('Order status updated successfully.');
+
+      const order = orders.find((order) => order._id === orderId);
+      if (order) {
+        await axios.post(`${backendUrl}/api/admin/send-notification`, {
+          email: order.userEmail,
+          subject: 'Order Status Update',
+          message: `Your order with ID ${orderId} has been updated to ${newStatus}.`,
+        });
+        toast.success('Notification sent to the user.');
+      }
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to update order status.');
     }
   };
 
@@ -123,8 +164,6 @@ const Admin = () => {
   return (
     <div className="p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Dashboard</h1>
-
-      {/* Orders Section */}
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Orders</h2>
         {orders.length > 0 ? (
@@ -159,21 +198,29 @@ const Admin = () => {
                       ))}
                     </ul>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">{order.status}</td>
+                  <td className="border border-gray-300 px-4 py-2">
+                    <select
+                      value={order.status}
+                      onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
+                      className="border border-gray-300 px-2 py-1"
+                    >
+                      <option value="Pending">Pending</option>
+                      <option value="Processing">Processing</option>
+                      <option value="Shipped">Shipped</option>
+                      <option value="Delivered">Delivered</option>
+                      <option value="Cancelled">Cancelled</option>
+                    </select>
+                  </td>
                 </tr>
               ))}
             </tbody>
           </table>
         ) : (
-          <p>No orders available</p>
+          <p>No orders available.</p>
         )}
       </section>
-
-      {/* Products Section */}
       <section>
         <h2 className="text-xl font-semibold mb-2">Products</h2>
-
-        {/* Add Product Form */}
         <form onSubmit={handleAddProduct} className="mb-4 flex flex-wrap gap-2">
           <input
             type="text"
@@ -212,8 +259,6 @@ const Admin = () => {
             Add Product
           </button>
         </form>
-
-        {/* Bulk Upload Form */}
         <form onSubmit={handleBulkUpload} className="mb-4">
           <input
             type="file"
@@ -226,8 +271,6 @@ const Admin = () => {
             Upload Bulk Products
           </button>
         </form>
-
-        {/* Products Table */}
         {products.length > 0 ? (
           <table className="w-full border-collapse border border-gray-300">
             <thead>
@@ -285,7 +328,7 @@ const Admin = () => {
             </tbody>
           </table>
         ) : (
-          <p>No products available</p>
+          <p>No products available.</p>
         )}
       </section>
     </div>

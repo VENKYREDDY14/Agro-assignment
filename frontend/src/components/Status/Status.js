@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify'; // Import toast for notifications
+import { ThreeDots } from 'react-loader-spinner'; // Import the specific loader
 
 const Status = () => {
   const [orders, setOrders] = useState([]);
@@ -8,6 +10,13 @@ const Status = () => {
 
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
+  // Function to render the loading spinner
+  const renderLoadingView = () => (
+    <div className="flex justify-center items-center min-h-screen" data-testid="loader">
+      <ThreeDots color="#0b69ff" height={50} width={50} />
+    </div>
+  );
+
   useEffect(() => {
     const fetchOrders = async () => {
       try {
@@ -15,6 +24,7 @@ const Status = () => {
         if (!token) {
           setError('User not authenticated. Please log in.');
           setLoading(false);
+          toast.error('User not authenticated. Please log in.');
           return;
         }
 
@@ -27,13 +37,17 @@ const Status = () => {
 
         setOrders(ordersResponse.data);
         setLoading(false);
+        toast.success('Orders fetched successfully!');
       } catch (err) {
         if (err.response && err.response.status === 404) {
           setError('No orders found for the authenticated user.');
+          toast.error('No orders found.');
         } else if (err.response && err.response.status === 401) {
           setError('Unauthorized access. Please log in again.');
+          toast.error('Unauthorized access. Please log in again.');
         } else {
           setError('Failed to fetch orders. Please try again later.');
+          toast.error('Failed to fetch orders. Please try again later.');
         }
         setLoading(false);
       }
@@ -43,14 +57,19 @@ const Status = () => {
   }, [backendUrl]);
 
   if (loading) {
-    return <div className="p-4 pt-20 text-center">Loading...</div>;
+    return renderLoadingView(); // Render the loading spinner
   }
 
   if (error) {
     return (
-      <div className="p-4 pt-20 text-center text-red-500">
-        <h1 className="text-xl font-bold">Error</h1>
-        <p>{error}</p>
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <img
+          alt="error view"
+          src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-error-view-img.png"
+          className="w-[300px] h-[165px] sm:w-[200px] sm:h-[110px] md:w-[250px] md:h-[140px]"
+        />
+        <h1 className="text-xl font-bold text-red-500 mt-4">Error</h1>
+        <p className="text-red-500">{error}</p>
       </div>
     );
   }

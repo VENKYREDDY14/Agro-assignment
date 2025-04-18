@@ -21,7 +21,7 @@ const Header = () => {
     const handleLogout = () => {
         localStorage.removeItem('jwtToken'); // Remove token from localStorage
         setIsLoggedIn(false); // Update state to trigger re-render
-        navigate('/login'); // Redirect to login page
+        navigate('/'); // Redirect to login page
     };
 
     useEffect(() => {
