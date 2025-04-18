@@ -216,7 +216,7 @@ const Admin = () => {
                       className="border border-gray-300 px-2 py-1"
                     >
                       <option value="Pending">Pending</option>
-                      <option value="Processing">Processing</option>
+                      <option value="Processing">In Progress</option>
                       <option value="Shipped">Shipped</option>
                       <option value="Delivered">Delivered</option>
                       <option value="Cancelled">Cancelled</option>
