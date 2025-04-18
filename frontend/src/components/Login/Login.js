@@ -109,12 +109,6 @@ const Login = () => {
           {errorStatus && <p className="text-red-500 text-center">Invalid credentials</p>}
 
           <div className="text-center">
-            <Link to="/reset-password" className="text-blue-600 hover:underline">
-              Forgot password?
-            </Link>
-          </div>
-
-          <div className="text-center">
             <Link to="/register" className="text-blue-600 hover:underline">
               Register
             </Link>

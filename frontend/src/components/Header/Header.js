@@ -32,7 +32,7 @@ const Header = () => {
     return (
         <header className="fixed top-0 left-0 w-full z-50 flex justify-between items-center px-6 py-4 bg-blue-600 text-white shadow-md">
             {/* Logo Section */}
-            <div className="text-2xl font-bold">
+            <div className="text-2xl font-bold cursor-pointer" onClick={() => navigate('/')}>
                 <span className="text-yellow-400">Fruit</span>Mart
             </div>
 

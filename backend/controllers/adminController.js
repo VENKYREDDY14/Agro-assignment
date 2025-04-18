@@ -36,12 +36,12 @@ export const bulkUploadProducts = async (req, res) => {
     fs.createReadStream(req.file.path)
       .pipe(csv())
       .on('data', (row) => {
-        if (row.name && row.price && row.type && row.img) {
+        if (row.name && row.price && row.type) {
           products.push({
             name: row.name,
             price: parseFloat(row.price),
             type: row.type,
-            img: row.img, // Use the provided image URL in the CSV
+           
           });
         } else {
           console.warn('Invalid row skipped:', row);
@@ -51,20 +51,8 @@ export const bulkUploadProducts = async (req, res) => {
         try {
           console.log(`Parsed ${products.length} valid products from CSV`);
 
-          // Upload images to Cloudinary and save products
-          const uploadedProducts = await Promise.all(
-            products.map(async (product) => {
-              const result = await cloudinary.v2.uploader.upload(product.img, {
-                folder: 'products',
-              });
-              return {
-                ...product,
-                img: result.secure_url, // Replace local image path with Cloudinary URL
-              };
-            })
-          );
-
-          const savedProducts = await Product.insertMany(uploadedProducts);
+         
+          const savedProducts = await Product.insertMany(products);
           console.log('Products successfully saved to the database');
           res.status(201).json({ message: 'Products uploaded successfully', products: savedProducts });
         } catch (error) {

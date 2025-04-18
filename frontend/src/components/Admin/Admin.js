@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { ThreeDots } from 'react-loader-spinner';
 
 const Admin = () => {
   const [orders, setOrders] = useState([]);
@@ -59,7 +60,7 @@ const Admin = () => {
       await axios.post(`${backendUrl}/api/admin/add-products`, formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
-     
+
       toast.success('Product added successfully.');
       fetchProducts();
       setNewProduct({ name: '', price: '', type: '', img: null });
@@ -150,14 +151,23 @@ const Admin = () => {
   };
 
   if (loading) {
-    return <div className="p-4 pt-20 text-center">Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <ThreeDots color="#0b69ff" height={50} width={50} />
+      </div>
+    );
   }
 
   if (error) {
     return (
-      <div className="p-4 pt-20 text-center text-red-500">
-        <h1 className="text-xl font-bold">Error</h1>
-        <p>{error}</p>
+      <div className="flex flex-col justify-center items-center min-h-screen">
+        <img
+          alt="error view"
+          src="https://assets.ccbp.in/frontend/react-js/nxt-trendz-error-view-img.png"
+          className="w-[300px] h-[165px] sm:w-[200px] sm:h-[110px] md:w-[250px] md:h-[140px]"
+        />
+        <h1 className="text-xl font-bold text-red-500 mt-4">Error</h1>
+        <p className="text-red-500">{error}</p>
       </div>
     );
   }
@@ -168,29 +178,29 @@ const Admin = () => {
       <section className="mb-8">
         <h2 className="text-xl font-semibold mb-2">Orders</h2>
         {orders.length > 0 ? (
-          <table className="w-full border-collapse border border-gray-300">
+          <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
             <thead>
               <tr>
-                <th className="border border-gray-300 px-4 py-2">Order ID</th>
-                <th className="border border-gray-300 px-4 py-2">User ID</th>
-                <th className="border border-gray-300 px-4 py-2">Buyer Name</th>
-                <th className="border border-gray-300 px-4 py-2">Contact</th>
-                <th className="border border-gray-300 px-4 py-2">Address</th>
-                <th className="border border-gray-300 px-4 py-2">Total Items</th>
-                <th className="border border-gray-300 px-4 py-2">Ordered Items</th>
-                <th className="border border-gray-300 px-4 py-2">Status</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Order ID</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">User ID</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Buyer Name</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Contact</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Address</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Total Items</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Ordered Items</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Status</th>
               </tr>
             </thead>
             <tbody>
               {orders.map((order) => (
                 <tr key={order._id}>
-                  <td className="border border-gray-300 px-4 py-2">{order._id}</td>
-                  <td className="border border-gray-300 px-4 py-2">{order.userId}</td>
-                  <td className="border border-gray-300 px-4 py-2">{order.buyer_name}</td>
-                  <td className="border border-gray-300 px-4 py-2">{order.buyer_contact}</td>
-                  <td className="border border-gray-300 px-4 py-2">{order.delivery_address}</td>
-                  <td className="border border-gray-300 px-4 py-2">{order.items.length}</td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{order._id}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{order.userId}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{order.buyer_name}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{order.buyer_contact}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{order.delivery_address}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{order.items.length}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">
                     <ul>
                       {order.items.map((item, index) => (
                         <li key={index}>
@@ -199,7 +209,7 @@ const Admin = () => {
                       ))}
                     </ul>
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">
                     <select
                       value={order.status}
                       onChange={(e) => handleUpdateOrderStatus(order._id, e.target.value)}
@@ -273,20 +283,20 @@ const Admin = () => {
           </button>
         </form>
         {products.length > 0 ? (
-          <table className="w-full border-collapse border border-gray-300">
+          <table className="w-full border-collapse border border-gray-300 text-sm md:text-base">
             <thead>
               <tr>
-                <th className="border border-gray-300 px-4 py-2">Name</th>
-                <th className="border border-gray-300 px-4 py-2">Price</th>
-                <th className="border border-gray-300 px-4 py-2">Type</th>
-                <th className="border border-gray-300 px-4 py-2">Actions</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Name</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Price</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Type</th>
+                <th className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
               {products.map((product) => (
                 <tr key={product._id}>
-                  <td className="border border-gray-300 px-4 py-2">{product.name}</td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{product.name}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">
                     {editingProduct === product._id ? (
                       <>
                         <input
@@ -306,8 +316,8 @@ const Admin = () => {
                       `₹${product.price}`
                     )}
                   </td>
-                  <td className="border border-gray-300 px-4 py-2">{product.type}</td>
-                  <td className="border border-gray-300 px-4 py-2">
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">{product.type}</td>
+                  <td className="border border-gray-300 px-2 py-1 md:px-4 md:py-2">
                     <button
                       onClick={() => {
                         setEditingProduct(product._id);
