@@ -40,8 +40,6 @@ The primary goal of this project is to create a web application that streamlines
   - View all orders placed by buyers.
   - Update order statuses (e.g., Pending, Processing, Delivered).
   - Notify buyers about order status updates.
-- **Inventory Management**:
-  - Manage stock levels and ensure product availability.
 
 ---
 
