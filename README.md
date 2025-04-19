@@ -23,6 +23,9 @@ The primary goal of this project is to create a web application that streamlines
 
 - **Product Browsing**:
   - View a list of available vegetables and fruits with details like name, price, and type.
+- **Search & Sort**:
+  - Search products by name.
+  - Sort products by price or name.
 - **Cart Management**:
   - Add products to the cart, update quantities, and remove items.
 - **Bulk Order Placement**:
