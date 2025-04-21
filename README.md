@@ -112,6 +112,11 @@ The primary goal of this project is to create a web application that streamlines
 
 ---
 
+## **For Admin Login **
+    for admin login use below credentials:
+     gmail='admin@gmail.com'
+     password='admin@password'
+
 ## **Database Mock Data**
 
 ### **Users Collection**
